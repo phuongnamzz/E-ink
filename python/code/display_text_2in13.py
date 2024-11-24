@@ -11,9 +11,12 @@ from waveshare_epd import epd2in13_V4
 from PIL import Image, ImageDraw, ImageFont
 import socket
 from datetime import datetime
+import time
 file_path = "/home/system/output.txt"
 
 
+
+start_time = time.time()
 def get_datetime():
     now = datetime.now()
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
@@ -104,7 +107,7 @@ try:
     y_offset = 18  # Distance from the top
     for line in lines:
         line_width, line_height = font_display.getbbox(line)[2:4]
-        x_offset = (epd.height - line_width) // 2  # Center the line
+        x_offset = (epd.height - line_width) // 2 + 2  # Center the line
         draw.text((x_offset, y_offset), line, font=font_display, fill=0)
         y_offset += line_height  # Move down to the next line
 
@@ -113,12 +116,13 @@ try:
     draw_symbol(epd, Himage, os.path.join(picdir, "bolt.bmp"), epd.height -60, 0 )
     draw_symbol(epd, Himage, os.path.join(picdir, "tick.bmp"), int(epd.height / 2), 0 )
     epd.displayPartial(epd.getbuffer(Himage))
+    # epd.display(epd.getbuffer(Himage))
     
     
     # time.sleep(1)
     epd.sleep()
     # print("Done")
-    
+    print("--- %s seconds ---" % (time.time() - start_time))
 except IOError as e:
     pass
     
