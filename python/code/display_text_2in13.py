@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 import socket
 from datetime import datetime
 import time
-file_path = "/home/system/output.txt"
+file_path = "/home/miner/.content.txt"
 
 
 
