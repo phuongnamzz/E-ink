@@ -60,6 +60,7 @@ def draw_symbol(epd, canvas, bmp_path, x, y):
     """
     # Load the BMP file
     bmp_image = Image.open(bmp_path)
+    bmp_image = bmp_image.rotate(180)
     # Paste the BMP onto the existing canvas
     canvas.paste(bmp_image, (x, y))
 
@@ -112,11 +113,11 @@ try:
         y_offset += line_height  # Move down to the next line
 
 
-    Himage = Himage.rotate(0)
-    draw_symbol(epd, Himage, os.path.join(picdir, "bolt.bmp"), epd.height -60, 0 )
-    draw_symbol(epd, Himage, os.path.join(picdir, "tick.bmp"), int(epd.height / 2), 0 )
+    Himage = Himage.rotate(180)
+    draw_symbol(epd, Himage, os.path.join(picdir, "bolt.bmp"), epd.height - 205, epd.width - 16)
+    draw_symbol(epd, Himage, os.path.join(picdir, "tick.bmp"), int(epd.height / 2), epd.width - 16)
     epd.displayPartial(epd.getbuffer(Himage))
-    # epd.display(epd.getbuffer(Himage))
+    #epd.display(epd.getbuffer(Himage))
     
     
     # time.sleep(1)
