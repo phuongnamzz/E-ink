@@ -10,7 +10,7 @@ if os.path.exists(libdir):
 from waveshare_epd import epd2in13_V4
 from PIL import Image, ImageDraw, ImageFont
 import socket
-from datetime import datetime
+import subprocess
 import time
 import argparse
 file_path = "/home/miner/.content.txt"
@@ -20,17 +20,17 @@ parser = argparse.ArgumentParser(description="Select refreh option: slow or fast
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('--slow', action='store_true', help="refresh (slow).")
 group.add_argument('--fast', action='store_true', help="refresh (fast).")
+parser.add_argument('-b', "--battery_percent", type=int, required=True, help="battery percent with integer")
+parser.add_argument('-u', "--username_truth", type=str, required=True, help="user name of truth terminal")
+parser.add_argument('-e', "--eai_value", type=str, required=True, help="EAI value")
+
+
 
 args = parser.parse_args()
 
 
 
 start_time = time.time()
-def get_date():
-    now = datetime.now()
-    date_string = now.strftime("%d/%m/%Y")
-    return date_string
-
 
 def wrap_text(text, font, max_width):
     """Splits the text into lines that fit within the max width."""
@@ -57,6 +57,15 @@ def get_ip_address():
         return f"Error: {e}"
 
 
+def get_wifiName():
+    try:
+        result = subprocess.check_output(['iwgetid', '--raw'], stderr=subprocess.STDOUT)
+
+        wifi_name = result.decode('utf-8').strip()
+        return wifi_name if wifi_name else "Currently, not connected"
+    except subprocess.CalledProcessError:
+        return "Can not get Wifi name"
+    
 def draw_symbol(epd, canvas, bmp_path, x, y):
     """
     Draw a BMP on top of an existing canvas without erasing previous content.
@@ -78,10 +87,6 @@ def draw_symbol(epd, canvas, bmp_path, x, y):
 
 try:
 
-    ip = get_ip_address()
-    # print(f"My Raspberry Pi IP Address: {ip}")
-
-
     with open(file_path, 'r') as f:
         content = f.read()
 
@@ -89,49 +94,62 @@ try:
 
     epd.init_fast()
     fontRoboto14 = ImageFont.truetype(os.path.join(picdir, 'Roboto-Medium.ttf'), 14)
-    fontRoboto = ImageFont.truetype(os.path.join(picdir, 'Roboto-Medium.ttf'), 16)
-    font_display = fontRoboto
+    fontRoboto16 = ImageFont.truetype(os.path.join(picdir, 'Roboto-Medium.ttf'), 16)
     # Drawing on the Horizontal image
     Himage = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    
     draw = ImageDraw.Draw(Himage)
-    # draw.line([(0, 16),(epd.height, 16)], fill = 0,width = 2)
-    draw.text((0 , epd.width - 16), ip, font = fontRoboto14, fill = 0)
-    # battery symbols
-    draw.rectangle([(epd.height -40, 0),(epd.height -1 ,16)],outline = 0, width = 2)
-    draw.line([(epd.height -42, 4),(epd.height -42 , 12)], fill = 0,width = 3)
+    #draw battery
+    percent_battery = args.battery_percent
+    x_battery_line = 3
+    if percent_battery >= 80:
+        draw.line([(x_battery_line, 0),(x_battery_line, 12)], fill = 0, width = 3)
+        draw.line([(x_battery_line + 5, 0),(x_battery_line + 5, 12)], fill = 0, width = 3)
+        draw.line([(x_battery_line + 10, 0),(x_battery_line + 10, 12)], fill = 0, width = 3)
+        draw.line([(x_battery_line + 15, 0),(x_battery_line + 15, 12)], fill = 0, width = 3)
+        draw.line([(x_battery_line + 20, 0),(x_battery_line + 20, 12)], fill = 0, width = 3)
+    elif percent_battery >=60 and percent_battery < 80:
+        draw.line([(x_battery_line, 0),(x_battery_line, 12)], fill = 0, width = 3)
+        draw.line([(x_battery_line + 5, 0),(x_battery_line + 5, 12)], fill = 0, width = 3)
+        draw.line([(x_battery_line + 10, 0),(x_battery_line + 10, 12)], fill = 0, width = 3)
+        draw.line([(x_battery_line + 15, 0),(x_battery_line + 15, 12)], fill = 0, width = 3)
+    elif percent_battery >=40 and percent_battery < 60:
+        draw.line([(x_battery_line, 0),(x_battery_line, 12)], fill = 0, width = 3)
+        draw.line([(x_battery_line + 5, 0),(x_battery_line + 5, 12)], fill = 0, width = 3)
+        draw.line([(x_battery_line + 10, 0),(x_battery_line + 10, 12)], fill = 0, width = 3)
+    elif percent_battery >= 20 and percent_battery < 40:
+        draw.line([(x_battery_line, 0),(x_battery_line, 12)], fill = 0, width = 3)
+        draw.line([(x_battery_line + 5, 0),(x_battery_line + 5, 12)], fill = 0, width = 3)
+    elif percent_battery < 20:
+         draw.line([(x_battery_line, 0),(x_battery_line, 12)], fill = 0, width = 3)
     # message frame
-    draw.rounded_rectangle([(0, 0 + 18),(epd.height -1, epd.width -16)], radius = 5, outline = 0, width = 2)
-    #
-    draw.text((epd.height -38, 0), "100%", font = fontRoboto14, fill = 0)
-    # date
-    date_string = get_date()
-    draw.text((0, 0), date_string, font = fontRoboto14, fill = 0 )
-    # message number
-    draw.text((epd.height - 30, epd.width - 16), "3/5", font = fontRoboto14, fill = 0)
+    draw.rounded_rectangle([(0, 0 + 15),(epd.height -1, epd.width -15)], radius = 5, outline = 0, width = 2)
+    #draw EAI
+    # EAI = "0.001 EAI"
+    eai_value = args.eai_value
+    draw.text((epd.height - 62, 0), eai_value, font = fontRoboto14, fill = 0)
+    # draw wifi name
+    draw.text((30, -2), get_wifiName(), font = fontRoboto14, fill = 0 )
+    # draw user
+    # user = "@truth_terminal (0.0001 EAI +- 0.05%)"
+    user = args.username_truth
+    draw.text((0, epd.width - 14), user, font = fontRoboto14, fill = 0)
     
 
 
     # Split the text into lines that fit within the screen width
     max_width = epd.height - 5  # Leave 5 pixels margin on each side
-    lines = wrap_text(content, font_display, max_width)
+    lines = wrap_text(content, fontRoboto16, max_width)
     
-    y_offset = 18  # Distance from the top
+    y_offset = 15  # Distance from the top
     for line in lines:
-        line_width, line_height = font_display.getbbox(line)[2:4]
+        line_width, line_height = fontRoboto16.getbbox(line)[2:4]
         x_offset = (epd.height - line_width) // 2 + 2  # Center the line
-        draw.text((x_offset, y_offset), line, font=font_display, fill=0)
+        draw.text((x_offset, y_offset), line, font=fontRoboto16, fill=0)
         y_offset += line_height  # Move down to the next line
 
 
     Himage = Himage.rotate(180)
-    draw_symbol(epd, Himage, os.path.join(picdir, "bolt.bmp"), epd.height - 205, epd.width - 16)
-    # draw_symbol(epd, Himage, os.path.join(picdir, "tick.bmp"), int(epd.height / 2), epd.width - 16)
-    x_back_button = 120
-    draw_symbol(epd, Himage, os.path.join(picdir, "back-button.bmp"), x_back_button , -1)
-    draw_symbol(epd, Himage, os.path.join(picdir, "cart.bmp"), x_back_button - 20 , -1)
-    draw_symbol(epd, Himage, os.path.join(picdir, "sell.bmp"), x_back_button - 2*20, -1 )
-    draw_symbol(epd, Himage, os.path.join(picdir, "fast-forward.bmp"), x_back_button - 3*20, -1 )
+
 
     if args.fast:
         epd.displayPartial(epd.getbuffer(Himage))
