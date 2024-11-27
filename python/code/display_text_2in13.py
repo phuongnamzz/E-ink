@@ -12,15 +12,24 @@ from PIL import Image, ImageDraw, ImageFont
 import socket
 from datetime import datetime
 import time
+import argparse
 file_path = "/home/miner/.content.txt"
+
+
+parser = argparse.ArgumentParser(description="Select refreh option: slow or fast.")
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('--slow', action='store_true', help="refresh (slow).")
+group.add_argument('--fast', action='store_true', help="refresh (fast).")
+
+args = parser.parse_args()
 
 
 
 start_time = time.time()
-def get_datetime():
+def get_date():
     now = datetime.now()
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-    return dt_string
+    date_string = now.strftime("%d/%m/%Y")
+    return date_string
 
 
 def wrap_text(text, font, max_width):
@@ -87,7 +96,7 @@ try:
     
     draw = ImageDraw.Draw(Himage)
     # draw.line([(0, 16),(epd.height, 16)], fill = 0,width = 2)
-    draw.text((0, 0), ip, font = fontRoboto14, fill = 0)
+    draw.text((0 , epd.width - 16), ip, font = fontRoboto14, fill = 0)
     # battery symbols
     draw.rectangle([(epd.height -40, 0),(epd.height -1 ,16)],outline = 0, width = 2)
     draw.line([(epd.height -42, 4),(epd.height -42 , 12)], fill = 0,width = 3)
@@ -95,9 +104,11 @@ try:
     draw.rounded_rectangle([(0, 0 + 18),(epd.height -1, epd.width -16)], radius = 5, outline = 0, width = 2)
     #
     draw.text((epd.height -38, 0), "100%", font = fontRoboto14, fill = 0)
-
-    dt_string = get_datetime()
-    draw.text((int(epd.height / 2) -70, epd.width -16), dt_string, font = fontRoboto14, fill = 0 )
+    # date
+    date_string = get_date()
+    draw.text((0, 0), date_string, font = fontRoboto14, fill = 0 )
+    # message number
+    draw.text((epd.height - 30, epd.width - 16), "3/5", font = fontRoboto14, fill = 0)
     
 
 
@@ -115,9 +126,17 @@ try:
 
     Himage = Himage.rotate(180)
     draw_symbol(epd, Himage, os.path.join(picdir, "bolt.bmp"), epd.height - 205, epd.width - 16)
-    draw_symbol(epd, Himage, os.path.join(picdir, "tick.bmp"), int(epd.height / 2), epd.width - 16)
-    epd.displayPartial(epd.getbuffer(Himage))
-    #epd.display(epd.getbuffer(Himage))
+    # draw_symbol(epd, Himage, os.path.join(picdir, "tick.bmp"), int(epd.height / 2), epd.width - 16)
+    x_back_button = 120
+    draw_symbol(epd, Himage, os.path.join(picdir, "back-button.bmp"), x_back_button , -1)
+    draw_symbol(epd, Himage, os.path.join(picdir, "cart.bmp"), x_back_button - 20 , -1)
+    draw_symbol(epd, Himage, os.path.join(picdir, "sell.bmp"), x_back_button - 2*20, -1 )
+    draw_symbol(epd, Himage, os.path.join(picdir, "fast-forward.bmp"), x_back_button - 3*20, -1 )
+
+    if args.fast:
+        epd.displayPartial(epd.getbuffer(Himage))
+    elif args.slow:
+        epd.display(epd.getbuffer(Himage))
     
     
     # time.sleep(1)
