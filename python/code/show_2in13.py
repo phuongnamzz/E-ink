@@ -23,7 +23,7 @@ group.add_argument('--fast', action='store_true', help="refresh (fast).")
 parser.add_argument('-b', "--battery_percent", type=int, required=True, help="battery percent with integer")
 parser.add_argument('-u', "--username_truth", type=str, required=True, help="user name of truth terminal")
 parser.add_argument('-e', "--eai_value", type=str, required=True, help="EAI value")
-
+parser.add_argument('-f', "--font_content", type=int, required=True, help="font size of content")
 
 
 args = parser.parse_args()
@@ -94,7 +94,7 @@ try:
 
     epd.init_fast()
     fontRoboto14 = ImageFont.truetype(os.path.join(picdir, 'Roboto-Medium.ttf'), 14)
-    fontRoboto16 = ImageFont.truetype(os.path.join(picdir, 'Roboto-Medium.ttf'), 16)
+    fontRoboto_Content = ImageFont.truetype(os.path.join(picdir, 'Roboto-Medium.ttf'), args.font_content)
     # Drawing on the Horizontal image
     Himage = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     draw = ImageDraw.Draw(Himage)
@@ -138,13 +138,13 @@ try:
 
     # Split the text into lines that fit within the screen width
     max_width = epd.height - 5  # Leave 5 pixels margin on each side
-    lines = wrap_text(content, fontRoboto16, max_width)
+    lines = wrap_text(content, fontRoboto_Content, max_width)
     
     y_offset = 15  # Distance from the top
     for line in lines:
-        line_width, line_height = fontRoboto16.getbbox(line)[2:4]
+        line_width, line_height = fontRoboto_Content.getbbox(line)[2:4]
         x_offset = (epd.height - line_width) // 2 + 2  # Center the line
-        draw.text((x_offset, y_offset), line, font=fontRoboto16, fill=0)
+        draw.text((x_offset, y_offset), line, font=fontRoboto_Content, fill=0)
         y_offset += line_height  # Move down to the next line
 
 
