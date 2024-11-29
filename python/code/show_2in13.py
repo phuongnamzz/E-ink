@@ -13,6 +13,7 @@ import socket
 import subprocess
 import time
 import argparse
+
 file_path = "/home/miner/.content.txt"
 
 
@@ -20,10 +21,11 @@ parser = argparse.ArgumentParser(description="Select refreh option: slow or fast
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('--slow', action='store_true', help="refresh (slow).")
 group.add_argument('--fast', action='store_true', help="refresh (fast).")
-parser.add_argument('-b', "--battery_percent", type=int, required=True, help="battery percent with integer")
+parser.add_argument('-b', "--battery_percent", type=int, required=False, help="battery percent with integer")
 parser.add_argument('-u', "--username_truth", type=str, required=True, help="user name of truth terminal")
 parser.add_argument('-e', "--eai_value", type=str, required=True, help="EAI value")
 parser.add_argument('-f', "--font_content", type=int, required=True, help="font size of content")
+parser.add_argument('-a', "--alter_value", type=str, required=True, help="alter value in string")
 
 
 args = parser.parse_args()
@@ -31,6 +33,12 @@ args = parser.parse_args()
 
 
 start_time = time.time()
+
+def substring(source, start, length):
+
+    return source[start:start + length]
+
+
 
 def wrap_text(text, font, max_width):
     """Splits the text into lines that fit within the max width."""
@@ -93,66 +101,48 @@ try:
     epd = epd2in13_V4.EPD()
 
     epd.init_fast()
-    fontRoboto14 = ImageFont.truetype(os.path.join(picdir, 'Roboto-Medium.ttf'), 14)
-    fontRoboto_Content = ImageFont.truetype(os.path.join(picdir, 'Roboto-Medium.ttf'), args.font_content)
+
+    font14 = ImageFont.truetype(os.path.join(picdir, 'JetBrainsMono-Bold.ttf'), 14)
+    font_Content = ImageFont.truetype(os.path.join(picdir, 'JetBrainsMono-VariableFont_wght.ttf'), args.font_content)
     # Drawing on the Horizontal image
     Himage = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     draw = ImageDraw.Draw(Himage)
-    #draw battery
-    percent_battery = args.battery_percent
-    x_battery_line = 3
-    if percent_battery >= 80:
-        draw.line([(x_battery_line, 0),(x_battery_line, 12)], fill = 0, width = 3)
-        draw.line([(x_battery_line + 5, 0),(x_battery_line + 5, 12)], fill = 0, width = 3)
-        draw.line([(x_battery_line + 10, 0),(x_battery_line + 10, 12)], fill = 0, width = 3)
-        draw.line([(x_battery_line + 15, 0),(x_battery_line + 15, 12)], fill = 0, width = 3)
-        draw.line([(x_battery_line + 20, 0),(x_battery_line + 20, 12)], fill = 0, width = 3)
-    elif percent_battery >=60 and percent_battery < 80:
-        draw.line([(x_battery_line, 0),(x_battery_line, 12)], fill = 0, width = 3)
-        draw.line([(x_battery_line + 5, 0),(x_battery_line + 5, 12)], fill = 0, width = 3)
-        draw.line([(x_battery_line + 10, 0),(x_battery_line + 10, 12)], fill = 0, width = 3)
-        draw.line([(x_battery_line + 15, 0),(x_battery_line + 15, 12)], fill = 0, width = 3)
-    elif percent_battery >=40 and percent_battery < 60:
-        draw.line([(x_battery_line, 0),(x_battery_line, 12)], fill = 0, width = 3)
-        draw.line([(x_battery_line + 5, 0),(x_battery_line + 5, 12)], fill = 0, width = 3)
-        draw.line([(x_battery_line + 10, 0),(x_battery_line + 10, 12)], fill = 0, width = 3)
-    elif percent_battery >= 20 and percent_battery < 40:
-        draw.line([(x_battery_line, 0),(x_battery_line, 12)], fill = 0, width = 3)
-        draw.line([(x_battery_line + 5, 0),(x_battery_line + 5, 12)], fill = 0, width = 3)
-    elif percent_battery < 20:
-         draw.line([(x_battery_line, 0),(x_battery_line, 12)], fill = 0, width = 3)
-    # message frame
-    draw.rounded_rectangle([(0, 0 + 15),(epd.height -1, epd.width -15)], radius = 5, outline = 0, width = 2)
+
     #draw EAI
     # EAI = "0.001 EAI"
     eai_value = args.eai_value
-    draw.text((epd.height - 62, 0), eai_value, font = fontRoboto14, fill = 0)
-    # draw wifi name
-    draw.text((30, -2), get_wifiName(), font = fontRoboto14, fill = 0 )
+    draw.text((epd.height - 70, epd.width -16), eai_value, font = font14, fill = 0)
     # draw user
     # user = "@truth_terminal (0.0001 EAI +- 0.05%)"
     user = args.username_truth
-    draw.text((0, epd.width - 14), user, font = fontRoboto14, fill = 0)
+    draw.text((2, 0), user, font = font14, fill = 0)
     
+    #
+    if len(args.alter_value) > 20:
+        alter_value_sub = substring(args.alter_value, 0, 20)
+    else:
+        alter_value_sub = args.alter_value
 
-
+    print(alter_value_sub)
+    draw.text((2, epd.width -16), alter_value_sub, font = font14, fill = 0)
+    
     # Split the text into lines that fit within the screen width
     max_width = epd.height - 5  # Leave 5 pixels margin on each side
-    lines = wrap_text(content, fontRoboto_Content, max_width)
+    lines = wrap_text(content, font_Content, max_width)
     
-    y_offset = 15  # Distance from the top
+    y_offset = 25  # Distance from the top
+
     for line in lines:
-        line_width, line_height = fontRoboto_Content.getbbox(line)[2:4]
-        x_offset = (epd.height - line_width) // 2 + 2  # Center the line
-        draw.text((x_offset, y_offset), line, font=fontRoboto_Content, fill=0)
-        y_offset += line_height  # Move down to the next line
+        line_width, line_height = font_Content.getbbox(line)[2:4]
+        x_offset = 4  
+        draw.text((x_offset, y_offset), line, font=font_Content, fill=0)
+        y_offset += line_height
 
-
-    Himage = Himage.rotate(180)
+    Himage = Himage.rotate(0)
 
 
     if args.fast:
-        epd.displayPartial(epd.getbuffer(Himage))
+        epd.display_fast(epd.getbuffer(Himage))
     elif args.slow:
         epd.display(epd.getbuffer(Himage))
     
