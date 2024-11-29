@@ -103,7 +103,7 @@ try:
     epd.init_fast()
 
     font14 = ImageFont.truetype(os.path.join(picdir, 'JetBrainsMono-Bold.ttf'), 14)
-    font14Normal = ImageFont.truetype(os.path.join(picdir, 'VariableFont_wght.ttf'), 14)
+    font14Normal = ImageFont.truetype(os.path.join(picdir, 'JetBrainsMono-VariableFont_wght.ttf'), 14)
     font_Content = ImageFont.truetype(os.path.join(picdir, 'JetBrainsMono-VariableFont_wght.ttf'), args.font_content)
     # Drawing on the Horizontal image
     Himage = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
