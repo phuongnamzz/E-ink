@@ -20,4 +20,4 @@ Ref: [Raspberry Pi: How to cross-compile against third-party libraries](https://
 ### Note : Glibc version same between host and raspberry 
 
 ## Convert font to Vietnamese need Unicode UTF-8 C language
-Waveshare e-paper lib for raspberry, Arduino, ESP32, STM32 https://github.com/waveshareteam/e-Paper support C and Python
+Waveshare e-paper lib for raspberry, Arduino, ESP32, STM32 https://github.com/waveshareteam/e-Paper support C and Python.
