@@ -122,8 +122,6 @@ try:
         alter_value_sub = substring(args.alter_value, 0, 20)
     else:
         alter_value_sub = args.alter_value
-
-    print(alter_value_sub)
     draw.text((2, epd.width -16), alter_value_sub, font = font14, fill = 0)
     
     # Split the text into lines that fit within the screen width
