@@ -110,18 +110,19 @@ try:
 
     #draw EAI
     # EAI = "0.001 EAI"
-    eai_value = args.eai_value
-    draw.text((epd.height - 70, epd.width -16), eai_value, font = font14, fill = 0)
+    # eai_value = args.eai_value
+    # draw.text((epd.height - 70, epd.width -16), eai_value, font = font14, fill = 0)
     # draw user
     # user = "@truth_terminal (0.0001 EAI +- 0.05%)"
     user = args.username_truth
     draw.text((2, 0), user, font = font14, fill = 0)
     
     #
-    if len(args.alter_value) > 20:
-        alter_value_sub = substring(args.alter_value, 0, 20)
-    else:
-        alter_value_sub = args.alter_value
+    # if len(args.alter_value) > 20:
+    #     alter_value_sub = substring(args.alter_value, 0, 20)
+    # else:
+    #     alter_value_sub = args.alter_value
+    alter_value_sub =   args.alter_value
     draw.text((2, epd.width -16), alter_value_sub, font = font14, fill = 0)
     
     # Split the text into lines that fit within the screen width
