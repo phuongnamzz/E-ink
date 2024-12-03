@@ -145,6 +145,7 @@ try:
     Himage = Himage.rotate(0)
     Himage = Himage.convert('1')
     Himage = Himage.filter(ImageFilter.SHARPEN)
+    Himage.save('output.png')
 
     if args.fast:
         epd.display_fast(epd.getbuffer(Himage))
