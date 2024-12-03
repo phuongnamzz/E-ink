@@ -8,11 +8,13 @@ if os.path.exists(libdir):
     sys.path.append(libdir)
 
 from waveshare_epd import epd2in13_V4
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 import socket
 import subprocess
 import time
 import argparse
+from pilmoji import Pilmoji
+
 
 file_path = "/home/miner/.content.txt"
 
@@ -116,7 +118,8 @@ try:
     # user = "@truth_terminal (0.0001 EAI +- 0.05%)"
     user = args.username_truth
     draw.text((2, 0), user, font = font14, fill = 0)
-    
+
+
     #
     # if len(args.alter_value) > 20:
     #     alter_value_sub = substring(args.alter_value, 0, 20)
@@ -130,15 +133,18 @@ try:
     lines = wrap_text(content, font_Content, max_width)
     
     y_offset = 25  # Distance from the top
+    with Pilmoji(Himage) as pilmoji:
+        for line in lines:
+            line_width, line_height = font_Content.getbbox(line)[2:4]
+            x_offset = 4  
+            pilmoji.text((x_offset, y_offset), line, font=font_Content, fill=0)
+            y_offset += line_height
 
-    for line in lines:
-        line_width, line_height = font_Content.getbbox(line)[2:4]
-        x_offset = 4  
-        draw.text((x_offset, y_offset), line, font=font_Content, fill=0)
-        y_offset += line_height
-
+    
+    Himage = Himage.resize((epd.height, epd.width), Image.LANCZOS)
     Himage = Himage.rotate(0)
-
+    Himage = Himage.convert('1')
+    Himage = Himage.filter(ImageFilter.SHARPEN)
 
     if args.fast:
         epd.display_fast(epd.getbuffer(Himage))
@@ -156,3 +162,4 @@ except IOError as e:
 except KeyboardInterrupt:    
     epd2in13_V4.epdconfig.module_exit(cleanup=True)
     exit()
+
