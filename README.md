@@ -21,3 +21,10 @@ Ref: [Raspberry Pi: How to cross-compile against third-party libraries](https://
 
 ## Convert font to Vietnamese need Unicode UTF-8 C language
 Waveshare e-paper lib for raspberry, Arduino, ESP32, STM32 https://github.com/waveshareteam/e-Paper support C and Python
+
+
+For python: 
++ Version >= Python 3.11
++ apt install python3-pip
++ apt install python3-pillow
++ pip install pilmoji emoji==1.7.0 --break-system-packagese
